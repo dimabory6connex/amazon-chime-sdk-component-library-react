@@ -10,7 +10,7 @@ const AWS = require('aws-sdk');
 /* eslint-enable */
 
 let hostname = '127.0.0.1';
-let port = 8081;
+let port = 8080;
 let protocol = 'http';
 let options = {};
 
