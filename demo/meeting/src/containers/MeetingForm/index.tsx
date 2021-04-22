@@ -1,26 +1,20 @@
 // Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, {
-  useState,
-  useContext,
-  ChangeEvent,
-  useCallback,
-  useEffect,
-} from 'react';
+import React, { ChangeEvent, useCallback, useContext, useEffect, useState, } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
-  Input,
   Flex,
-  Heading,
   FormField,
-  PrimaryButton,
-  SecondaryButton,
-  useMeetingManager,
+  Heading,
+  Input,
   Modal,
   ModalBody,
   ModalHeader,
+  PrimaryButton,
+  SecondaryButton,
+  useMeetingManager,
 } from 'amazon-chime-sdk-component-library-react';
 
 import { getErrorContext } from '../../providers/ErrorProvider';
@@ -28,12 +22,14 @@ import routes from '../../constants/routes';
 import Card from '../../components/Card';
 import Spinner from '../../components/Spinner';
 import DevicePermissionPrompt from '../DevicePermissionPrompt';
-import {
-  fetchMeeting,
-  createGetAttendeeCallback,
-  getAllMeetings,
-} from '../../utils/api';
+import { createGetAttendeeCallback, deleteMeeting, fetchMeeting, getAllMeetings, } from '../../utils/api';
 import { useAppState } from '../../providers/AppStateProvider';
+import styled from 'styled-components';
+
+const RemoveMeetingLink = styled.a`
+  color: #9e3319;
+  text-decoration: none;
+`
 
 const MeetingForm: React.FC = () => {
   const meetingManager = useMeetingManager();
@@ -43,7 +39,7 @@ const MeetingForm: React.FC = () => {
     meetingId: appMeetingId,
   } = useAppState();
   const [meetingId, setMeetingId] = useState(appMeetingId);
-  const [meetingErr, setMeetingErr] = useState(false);
+  // const [_, setMeetingErr] = useState(false);
   const [name, setName] = useState('');
   const [nameErr, setNameErr] = useState(false);
   const [region] = useState(appRegion);
@@ -51,7 +47,7 @@ const MeetingForm: React.FC = () => {
   const { errorMessage, updateErrorMessage } = useContext(getErrorContext());
   const history = useHistory();
   // new features
-  const [meetings, setMeetings] = useState<any>([]);
+  const [meetings, setMeetings] = useState<Array<any>>([]);
   const getMeetings = useCallback(async () => {
     const data = await getAllMeetings();
     // eslint-disable-next-line no-shadow
@@ -89,6 +85,8 @@ const MeetingForm: React.FC = () => {
       }
     );
   }, []);
+
+  const handleRemoveMeeting = (index: any) => deleteMeeting(meetings[index].name).then(getMeetings);
 
   const handleJoinToSelectedMeeting = useCallback(async (item: any) => {
     setMeetingId(item.name);
@@ -130,9 +128,9 @@ const MeetingForm: React.FC = () => {
         setNameErr(true);
       }
 
-      if (!id) {
-        setMeetingErr(true);
-      }
+      // if (!id) {
+      //   setMeetingErr(true);
+      // }
 
       return;
     }
@@ -163,60 +161,61 @@ const MeetingForm: React.FC = () => {
   };
   return (
     <>
-      <form>
-        <Heading tag="h3" level={4} css="margin-bottom: 1rem">
-          New meeting
-        </Heading>
+      {
+        !meetingId && <>
+          <form>
+            <Heading tag="h3" level={4} css="margin-bottom: 1rem">
+              New meeting
+            </Heading>
 
-        <FormField
-          field={Input}
-          label="New Meeting Id"
-          value={newMeetingId}
-          infoText="Anyone with access to the meeting ID can join"
-          fieldProps={{
-            name: 'newMeetingId',
-            placeholder: 'Enter Meeting Id',
-          }}
-          errorText="Please enter a valid meeting ID"
-          error={newMeetingErr}
-          onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-            setNewMeetingId(e.target.value);
-            if (newMeetingErr) {
-              setNewMeetingErr(false);
-            }
-          }}
-        />
-
-        <Flex
-          container
-          layout="fill-space-centered"
-          style={{ marginTop: '2.5rem' }}
-        >
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            <PrimaryButton
-              label="Create new"
-              onClick={handleCreateNewMeeting}
+            <FormField
+              field={Input}
+              label="New Meeting Id"
+              value={newMeetingId}
+              infoText="Anyone with access to the meeting ID can join"
+              fieldProps={{
+                name: 'newMeetingId',
+                placeholder: 'Enter Meeting Id',
+              }}
+              errorText="Please enter a valid meeting ID"
+              error={newMeetingErr}
+              onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+                setNewMeetingId(e.target.value);
+                if (newMeetingErr) {
+                  setNewMeetingErr(false);
+                }
+              }}
             />
-          )}
-        </Flex>
-      </form>
 
-      <Flex>
-        <Heading tag="h3" level={4} css="margin-bottom: 1rem">
-          All meetings
-        </Heading>
-        {meetings.length < 1 ? <p><em>No meetings created yet.</em></p> : meetings.map((item: any, index: any) => {
-            const { name } = item;
-            return (
+            <Flex
+              container
+              layout="fill-space-centered"
+              style={{ marginTop: '2.5rem' }}
+            >
+              {isLoading ? (
+                <Spinner/>
+              ) : (
+                <PrimaryButton
+                  label="Create new"
+                  onClick={handleCreateNewMeeting}
+                />
+              )}
+            </Flex>
+          </form>
+          <Flex>
+            <Heading tag="h3" level={4} css="margin-bottom: 1rem">
+              All meetings
+            </Heading>
+            {meetings.length < 1 ? <p><em>No meetings created yet.</em></p> : meetings.map((item: any, index: any) => {
+              const { name } = item;
+              return (
                 <Flex
                   key={`${name}-${index}`}
                   container
                   justifyContent="space-between"
                   alignItems="baseline"
                 >
-                  <div>{name}</div>
+                  <div><RemoveMeetingLink href="" title="Remove meeting" onClick={() => handleRemoveMeeting(index)}>&#10006;</RemoveMeetingLink>&nbsp;{name}</div>
                   <div>
                     <PrimaryButton
                       label="Join"
@@ -236,33 +235,16 @@ const MeetingForm: React.FC = () => {
                     />
                   </div>
                 </Flex>)
-          })}
-      </Flex>
+            })}
+          </Flex>
+          <hr/>
+        </>
+      }
 
-      <hr/>
-
-      {meetings.length > 0 && <form>
+      {meetingId && <form>
         <Heading tag="h1" level={4} css="margin-bottom: 1rem">
-          Join a meeting
+          Join a meeting "{meetingId}"
         </Heading>
-        <FormField
-          field={Input}
-          label="Meeting Id"
-          value={meetingId}
-          infoText="Anyone with access to the meeting ID can join"
-          fieldProps={{
-            name: 'meetingId',
-            placeholder: 'Enter Meeting Id',
-          }}
-          errorText="Please enter a valid meeting ID"
-          error={meetingErr}
-          onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-            setMeetingId(e.target.value);
-            if (meetingErr) {
-              setMeetingErr(false);
-            }
-          }}
-        />
         <FormField
           field={Input}
           label="Name"
