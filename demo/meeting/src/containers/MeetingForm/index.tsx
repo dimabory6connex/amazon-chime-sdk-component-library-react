@@ -203,48 +203,45 @@ const MeetingForm: React.FC = () => {
         </Flex>
       </form>
 
-      <Heading tag="h3" level={4} css="margin-bottom: 1rem">
-        All meetings
-      </Heading>
-      <ul>
-        {meetings.map((item: any, index: any) => {
-          const { name } = item;
-          return (
-            <li key={`${name}-${index}`}>
-              <Flex
-                layout="equal-columns"
-                justifyContent="space-around"
-                alignItems="center"
-                css="margin: 1rem"
-              >
-                <div>
-                  <SecondaryButton
-                    label="Join to:"
-                    onClick={e => {
-                      e.preventDefault();
-                      handleJoinToSelectedMeeting(item);
-                    }}
-                  />
-                </div>
-                <div>
-                  <span style={{ textAlign: 'center' }}>{name}</span>
-                </div>
-                <div>
-                  <SecondaryButton
-                    label="Copy link"
-                    onClick={e => {
-                      e.preventDefault();
-                      const link = `${window.location.hostname}:${window.location.port}?meeting=${name}`;
-                      copy(link);
-                    }}
-                  />
-                </div>
-              </Flex>
-            </li>
-          );
-        })}
-      </ul>
-      <form>
+      <Flex>
+        <Heading tag="h3" level={4} css="margin-bottom: 1rem">
+          All meetings
+        </Heading>
+        {meetings.length < 1 ? <p><em>No meetings created yet.</em></p> : meetings.map((item: any, index: any) => {
+            const { name } = item;
+            return (
+                <Flex
+                  key={`${name}-${index}`}
+                  container
+                  justifyContent="space-between"
+                  alignItems="baseline"
+                >
+                  <div>{name}</div>
+                  <div>
+                    <PrimaryButton
+                      label="Join"
+                      onClick={e => {
+                        e.preventDefault();
+                        handleJoinToSelectedMeeting(item);
+                      }}
+                    />
+                    &nbsp;
+                    <SecondaryButton
+                      label="Copy 🔗"
+                      onClick={e => {
+                        e.preventDefault();
+                        const link = `${window.location.hostname}:${window.location.port}?meeting=${name}`;
+                        copy(link);
+                      }}
+                    />
+                  </div>
+                </Flex>)
+          })}
+      </Flex>
+
+      <hr/>
+
+      {meetings.length > 0 && <form>
         <Heading tag="h1" level={4} css="margin-bottom: 1rem">
           Join a meeting
         </Heading>
@@ -307,7 +304,7 @@ const MeetingForm: React.FC = () => {
           </Modal>
         )}
         <DevicePermissionPrompt />
-      </form>
+      </form>}
     </>
   );
 };
