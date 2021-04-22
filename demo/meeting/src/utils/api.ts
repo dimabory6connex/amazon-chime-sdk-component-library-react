@@ -53,6 +53,15 @@ export async function fetchMeeting(
   return data;
 }
 
+export function deleteMeeting(name: string): Promise<any> {
+  return fetch(
+    `${BASE_URL}meeting?name=${encodeURIComponent(name)}`,
+    {
+      method: 'DELETE',
+    }
+  );
+}
+
 export function createGetAttendeeCallback(meetingId: string) {
   return async (chimeAttendeeId: string, externalUserId?: string) => {
     const attendeeUrl = `${BASE_URL}attendee?title=${encodeURIComponent(
