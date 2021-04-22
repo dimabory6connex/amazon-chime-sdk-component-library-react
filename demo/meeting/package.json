@@ -25,7 +25,7 @@
     "build:release": "npm install && npm run build:fast",
     "postbuild": "node check-version.js",
     "start:client": "npm run build:fast && webpack-dev-server --content-base ./src/ --hot",
-    "start:backend": "node server.js",
+    "start:backend": "nodemon server.js",
     "start:fast": "concurrently \"npm run start:client\" \"npm run start:backend\"",
     "start": "npm run deps && yalc add amazon-chime-sdk-component-library-react && npm install --legacy-peer-deps && npm run start:fast",
     "start:release": "npm install && npm run start:fast"
@@ -59,6 +59,7 @@
     "eslint-plugin-react-hooks": "^1.7.0",
     "html-webpack-inline-source-plugin": "0.0.10",
     "html-webpack-plugin": "^3.2.0",
+    "nodemon": "^2.0.7",
     "prettier": "^1.19.1",
     "regenerator-runtime": "^0.13.7",
     "resize-observer-polyfill": "^1.5.1",
