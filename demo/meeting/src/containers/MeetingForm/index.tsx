@@ -185,7 +185,7 @@ const MeetingForm: React.FC = () => {
   };
   return (
     <>
-      {!meetingId && (
+      {!meetings.find(({ name }) => name === meetingId) ? (
         <>
           <form>
             <Heading tag="h3" level={4} css="margin-bottom: 1rem">
@@ -282,9 +282,7 @@ const MeetingForm: React.FC = () => {
           </Flex>
           <hr />
         </>
-      )}
-
-      {meetingId && (
+      ) : (
         <form>
           <Heading tag="h1" level={4} css="margin-bottom: 1rem">
             Join a meeting "{meetingId}"
