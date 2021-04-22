@@ -270,7 +270,7 @@ const MeetingForm: React.FC = () => {
                         label="Copy 🔗"
                         onClick={e => {
                           e.preventDefault();
-                          const link = `${window.location.hostname}:${window.location.port}?meeting=${name}`;
+                          const link = `${window.location.protocol}//${window.location.hostname}:${window.location.port}?meeting=${name}`;
                           copy(link);
                         }}
                       />
