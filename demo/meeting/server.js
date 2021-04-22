@@ -10,7 +10,7 @@ const AWS = require('aws-sdk');
 /* eslint-enable */
 
 let hostname = '127.0.0.1';
-let port = 8081;
+let port = 8080;
 let protocol = 'http';
 let options = {};
 
@@ -151,6 +151,19 @@ const server = require(protocol).createServer(
         response.statusCode = 200;
         response.setHeader('Content-Type', 'application/json');
         response.write(JSON.stringify(meetingCache), 'utf8');
+        response.end();
+      } else if (request.method === 'DELETE' && request.url.startsWith('/meeting?')) {
+        const query = url.parse(request.url, true).query;
+        const title = query.name;
+        await chime
+          .deleteMeeting({
+            MeetingId: meetingCache[title].Meeting.MeetingId
+          })
+          .promise();
+
+        delete meetingCache[title];
+
+        response.statusCode = 200;
         response.end();
       } else if (request.method === 'POST' && request.url.startsWith('/logs')) {
         console.log('Writing logs to cloudwatch');
