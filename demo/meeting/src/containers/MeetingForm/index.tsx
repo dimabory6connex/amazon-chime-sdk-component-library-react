@@ -1,7 +1,13 @@
 // Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { ChangeEvent, useCallback, useContext, useEffect, useState, } from 'react';
+import React, {
+  ChangeEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useHistory } from 'react-router-dom';
 
 import {
@@ -17,19 +23,24 @@ import {
   useMeetingManager,
 } from 'amazon-chime-sdk-component-library-react';
 
+import styled from 'styled-components';
 import { getErrorContext } from '../../providers/ErrorProvider';
 import routes from '../../constants/routes';
 import Card from '../../components/Card';
 import Spinner from '../../components/Spinner';
 import DevicePermissionPrompt from '../DevicePermissionPrompt';
-import { createGetAttendeeCallback, deleteMeeting, fetchMeeting, getAllMeetings, } from '../../utils/api';
+import {
+  createGetAttendeeCallback,
+  deleteMeeting,
+  fetchMeeting,
+  getAllMeetings,
+} from '../../utils/api';
 import { useAppState } from '../../providers/AppStateProvider';
-import styled from 'styled-components';
 
 const RemoveMeetingLink = styled.a`
   color: #9e3319;
   text-decoration: none;
-`
+`;
 
 const MeetingForm: React.FC = () => {
   const meetingManager = useMeetingManager();
@@ -86,7 +97,20 @@ const MeetingForm: React.FC = () => {
     );
   }, []);
 
-  const handleRemoveMeeting = (index: any) => deleteMeeting(meetings[index].name).then(getMeetings);
+  const handleRemoveMeeting = useCallback(
+    async (index: any) => {
+      setIsLoading(true);
+      try {
+        await deleteMeeting(meetings[index].name);
+        await getMeetings();
+      } catch (error) {
+        updateErrorMessage(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [getMeetings, meetings, updateErrorMessage]
+  );
 
   const handleJoinToSelectedMeeting = useCallback(async (item: any) => {
     setMeetingId(item.name);
@@ -161,8 +185,8 @@ const MeetingForm: React.FC = () => {
   };
   return (
     <>
-      {
-        !meetingId && <>
+      {!meetings.find(({ name }) => name === meetingId) ? (
+        <>
           <form>
             <Heading tag="h3" level={4} css="margin-bottom: 1rem">
               New meeting
@@ -193,7 +217,7 @@ const MeetingForm: React.FC = () => {
               style={{ marginTop: '2.5rem' }}
             >
               {isLoading ? (
-                <Spinner/>
+                <Spinner />
               ) : (
                 <PrimaryButton
                   label="Create new"
@@ -206,87 +230,106 @@ const MeetingForm: React.FC = () => {
             <Heading tag="h3" level={4} css="margin-bottom: 1rem">
               All meetings
             </Heading>
-            {meetings.length < 1 ? <p><em>No meetings created yet.</em></p> : meetings.map((item: any, index: any) => {
-              const { name } = item;
-              return (
-                <Flex
-                  key={`${name}-${index}`}
-                  container
-                  justifyContent="space-between"
-                  alignItems="baseline"
-                >
-                  <div><RemoveMeetingLink href="" title="Remove meeting" onClick={() => handleRemoveMeeting(index)}>&#10006;</RemoveMeetingLink>&nbsp;{name}</div>
-                  <div>
-                    <PrimaryButton
-                      label="Join"
-                      onClick={e => {
-                        e.preventDefault();
-                        handleJoinToSelectedMeeting(item);
-                      }}
-                    />
-                    &nbsp;
-                    <SecondaryButton
-                      label="Copy 🔗"
-                      onClick={e => {
-                        e.preventDefault();
-                        const link = `${window.location.hostname}:${window.location.port}?meeting=${name}`;
-                        copy(link);
-                      }}
-                    />
-                  </div>
-                </Flex>)
-            })}
+            {meetings.length < 1 ? (
+              <p>
+                <em>No meetings created yet.</em>
+              </p>
+            ) : (
+              meetings.map((item: any, index: any) => {
+                const { name } = item;
+                return (
+                  <Flex
+                    key={`${name}-${index}`}
+                    container
+                    justifyContent="space-between"
+                    alignItems="baseline"
+                  >
+                    <div>
+                      <RemoveMeetingLink
+                        href=""
+                        title="Remove meeting"
+                        onClick={e => {
+                          e.preventDefault();
+                          handleRemoveMeeting(index);
+                        }}
+                      >
+                        &#10006;
+                      </RemoveMeetingLink>
+                      &nbsp;{name}
+                    </div>
+                    <div>
+                      <PrimaryButton
+                        label="Join"
+                        onClick={e => {
+                          e.preventDefault();
+                          handleJoinToSelectedMeeting(item);
+                        }}
+                      />
+                      &nbsp;
+                      <SecondaryButton
+                        label="Copy 🔗"
+                        onClick={e => {
+                          e.preventDefault();
+                          const link = `${window.location.protocol}//${window.location.hostname}:${window.location.port}?meeting=${name}`;
+                          copy(link);
+                        }}
+                      />
+                    </div>
+                  </Flex>
+                );
+              })
+            )}
           </Flex>
-          <hr/>
+          <hr />
         </>
-      }
-
-      {meetingId && <form>
-        <Heading tag="h1" level={4} css="margin-bottom: 1rem">
-          Join a meeting "{meetingId}"
-        </Heading>
-        <FormField
-          field={Input}
-          label="Name"
-          value={name}
-          fieldProps={{
-            name: 'name',
-            placeholder: 'Enter Your Name',
-          }}
-          errorText="Please enter a valid name"
-          error={nameErr}
-          onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-            setName(e.target.value);
-            if (nameErr) {
-              setNameErr(false);
-            }
-          }}
-        />
-        <Flex
-          container
-          layout="fill-space-centered"
-          style={{ marginTop: '2.5rem' }}
-        >
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            <PrimaryButton label="Continue" onClick={handleJoinMeeting} />
+      ) : (
+        <form>
+          <Heading tag="h1" level={4} css="margin-bottom: 1rem">
+            Join a meeting "{meetingId}"
+          </Heading>
+          <FormField
+            field={Input}
+            label="Name"
+            value={name}
+            fieldProps={{
+              name: 'name',
+              placeholder: 'Enter Your Name',
+            }}
+            errorText="Please enter a valid name"
+            error={nameErr}
+            onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+              setName(e.target.value);
+              if (nameErr) {
+                setNameErr(false);
+              }
+            }}
+          />
+          <Flex
+            container
+            layout="fill-space-centered"
+            style={{ marginTop: '2.5rem' }}
+          >
+            {isLoading ? (
+              <Spinner />
+            ) : (
+              <PrimaryButton label="Continue" onClick={handleJoinMeeting} />
+            )}
+          </Flex>
+          {errorMessage && (
+            <Modal size="md" onClose={closeError}>
+              <ModalHeader title={`Meeting ID: ${meetingId}`} />
+              <ModalBody>
+                <Card
+                  title="Unable to join meeting"
+                  description="There was an issue finding that meeting. The meeting may have already ended, or your authorization may have expired."
+                  smallText={errorMessage}
+                />
+              </ModalBody>
+            </Modal>
           )}
-        </Flex>
-        {errorMessage && (
-          <Modal size="md" onClose={closeError}>
-            <ModalHeader title={`Meeting ID: ${meetingId}`} />
-            <ModalBody>
-              <Card
-                title="Unable to join meeting"
-                description="There was an issue finding that meeting. The meeting may have already ended, or your authorization may have expired."
-                smallText={errorMessage}
-              />
-            </ModalBody>
-          </Modal>
-        )}
-        <DevicePermissionPrompt />
-      </form>}
+          <DevicePermissionPrompt />
+        </form>
+      )}
     </>
   );
 };
