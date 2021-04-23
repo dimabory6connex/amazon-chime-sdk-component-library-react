@@ -14,8 +14,6 @@ let port = 8080;
 let protocol = 'http';
 let options = {};
 
-console.log('date 222', new Date());
-
 const chime = new AWS.Chime({ region: 'us-east-1' });
 const alternateEndpoint = process.env.ENDPOINT;
 if (alternateEndpoint) {
