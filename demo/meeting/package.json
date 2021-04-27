@@ -24,7 +24,7 @@
     "build": "npm run deps && yalc add amazon-chime-sdk-component-library-react && npm install --legacy-peer-deps && npm run build:fast",
     "build:release": "npm install && npm run build:fast",
     "postbuild": "node check-version.js",
-    "start:client": "npm run build:fast && webpack-dev-server --content-base ./src/ --hot",
+    "start:client": "npm run build:fast && webpack-dev-server",
     "start:backend": "nodemon --watch ./server.js --exec node ./server.js",
     "start:fast": "concurrently \"npm run start:client\" \"npm run start:backend\"",
     "start": "npm run deps && yalc add amazon-chime-sdk-component-library-react && npm install --legacy-peer-deps && npm run start:fast",

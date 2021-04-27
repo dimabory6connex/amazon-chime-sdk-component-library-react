@@ -12,5 +12,3 @@ verdaccio_app
 demo/*/yalc.lock
 demo/*/.yalc
 demo/chat/src/Config.js
-./yarn.log
-./yarn-error.log
