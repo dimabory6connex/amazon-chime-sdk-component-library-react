@@ -83,7 +83,8 @@ const server = require(protocol).createServer(
             ).Attendee
           }
         };
-        name && (attendeeCache[title][joinInfo.JoinInfo.Attendee.AttendeeId] = name);
+        name &&
+          (attendeeCache[title][joinInfo.JoinInfo.Attendee.AttendeeId] = name);
         response.statusCode = 201;
         response.setHeader('Content-Type', 'application/json');
         response.write(JSON.stringify(joinInfo), 'utf8');
@@ -152,7 +153,10 @@ const server = require(protocol).createServer(
         response.setHeader('Content-Type', 'application/json');
         response.write(JSON.stringify(meetingCache), 'utf8');
         response.end();
-      } else if (request.method === 'DELETE' && request.url.startsWith('/meeting?')) {
+      } else if (
+        request.method === 'DELETE' &&
+        request.url.startsWith('/meeting?')
+      ) {
         const query = url.parse(request.url, true).query;
         const title = query.name;
         await chime
