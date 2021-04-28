@@ -7,6 +7,7 @@ const fs = require('fs');
 const url = require('url');
 const uuid = require('uuid/v4');
 const AWS = require('aws-sdk');
+const { spawn, exec } = require('child_process');
 /* eslint-enable */
 
 let hostname = '127.0.0.1';
@@ -67,12 +68,16 @@ const server = require(protocol).createServer(
               MediaRegion: region
             })
             .promise();
+
+          meetingCache[title]['PlaybackURL'] = query.playbackURL;
+
           attendeeCache[title] = {};
         }
         const joinInfo = {
           JoinInfo: {
             Title: title,
             Meeting: meetingCache[title].Meeting,
+            PlaybackURL: meetingCache[title].PlaybackURL,
             Attendee: (
               await chime
                 .createAttendee({
@@ -164,6 +169,40 @@ const server = require(protocol).createServer(
         delete meetingCache[title];
 
         response.statusCode = 200;
+        response.end();
+      } else if (request.method === 'POST' && request.url.startsWith('/broadcasting?')) {
+        const query = url.parse(request.url, true).query;
+
+        if (query.stop !== undefined) {
+            exec('docker kill bcast');
+        } else {
+          const { meetingId, rtmp, streamKey } = query;
+
+          console.log('MEETING_URL',`${protocol}://${hostname}:${port}/?broadcast=1&meetingId=${meetingId}`);
+          console.log('RTMP_URL',`${rtmp}${streamKey}`);
+
+          const docker = spawn(
+            'docker', ["run", "--rm", "--network=host", "--shm-size=2g",
+              "--env",`MEETING_URL=${protocol}://${hostname}:${port}/?broadcast=1&meetingId=${meetingId}`,
+              "--env",`RTMP_URL=${rtmp}${streamKey}`,
+              "--name=bcast",
+              "meetingbcast:latest"]
+          );
+
+          docker.stdout.on('data', (data) => {
+            console.log(`stdout: ${data}`);
+          });
+
+          docker.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+          });
+
+          docker.on('close', (code) => {
+            console.log(`child process exited with code ${code}`);
+          });
+        }
+
+        response.statusCode = 202;
         response.end();
       } else if (request.method === 'POST' && request.url.startsWith('/logs')) {
         console.log('Writing logs to cloudwatch');

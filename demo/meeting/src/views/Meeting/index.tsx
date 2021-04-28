@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
-import {
-  VideoTileGrid,
-  UserActivityProvider
-} from 'amazon-chime-sdk-component-library-react';
+import { useAudioVideo, UserActivityProvider, VideoTileGrid } from 'amazon-chime-sdk-component-library-react';
 
-import { StyledLayout, StyledContent } from './Styled';
+import { StyledContent, StyledLayout } from './Styled';
 import NavigationControl from '../../containers/Navigation/NavigationControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import MeetingDetails from '../../containers/MeetingDetails';
@@ -18,6 +15,17 @@ import MeetingMetrics from '../../containers/MeetingMetrics';
 const MeetingView = () => {
   useMeetingEndRedirect();
   const { showNavbar, showRoster } = useNavigation();
+  const audioVideo = useAudioVideo();
+
+  const urlParams = new URLSearchParams(window.location.search);
+
+  React.useEffect(() => {
+    const broadcastOn = urlParams.get('broadcast') === "1";
+    if (broadcastOn) {
+      audioVideo?.realtimeMuteLocalAudio();
+    }
+  }, [urlParams, audioVideo])
+
 
   return (
     <UserActivityProvider>
@@ -28,7 +36,7 @@ const MeetingView = () => {
             className="videos"
             noRemoteVideoView={<MeetingDetails />}
           />
-          <MeetingControls />
+          {urlParams.get('broadcast') === null && <MeetingControls />}
         </StyledContent>
         <NavigationControl />
       </StyledLayout>

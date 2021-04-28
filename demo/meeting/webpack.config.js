@@ -71,7 +71,7 @@ module.exports = {
     hot: false,
     host: "127.0.0.1",
     port: 9000,
-    https: true,
+    https: false,
     historyApiFallback: true,
     writeToDisk: true
   }

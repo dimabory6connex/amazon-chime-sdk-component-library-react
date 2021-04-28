@@ -3,19 +3,26 @@
 
 import React from 'react';
 import {
-  ControlBar,
   AudioInputControl,
-  VideoInputControl,
-  ContentShareControl,
   AudioOutputControl,
+  ContentShareControl,
+  ControlBar,
   ControlBarButton,
+  Dots,
   useUserActivityState,
-  Dots
+  VideoInputControl
 } from 'amazon-chime-sdk-component-library-react';
 
 import EndMeetingControl from '../EndMeetingControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import { StyledControls } from './Styled';
+import StartStreamingControl from '../StartStreamingControl';
+import styled from 'styled-components';
+
+const StyledControlBar = styled(ControlBar)`
+  width: fit-content;
+  text-align: center;
+`
 
 const MeetingControls = () => {
   const { toggleNavbar, closeRoster, showRoster } = useNavigation();
@@ -31,7 +38,7 @@ const MeetingControls = () => {
 
   return (
     <StyledControls className="controls" active={!!isUserActive}>
-      <ControlBar
+      <StyledControlBar
         className="controls-menu"
         layout="undocked-horizontal"
         showLabels
@@ -47,7 +54,8 @@ const MeetingControls = () => {
         <ContentShareControl />
         <AudioOutputControl />
         <EndMeetingControl />
-      </ControlBar>
+        <StartStreamingControl />
+      </StyledControlBar>
     </StyledControls>
   );
 };
