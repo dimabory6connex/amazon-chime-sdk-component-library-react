@@ -37,7 +37,7 @@ const MeetingDetails = () => {
           mt={4}
           label={theme === 'light' ? 'Dark mode' : 'Light mode'}
           onClick={toggleTheme}
-        ></PrimaryButton>
+        />
       </Flex>
     </Flex>
   );

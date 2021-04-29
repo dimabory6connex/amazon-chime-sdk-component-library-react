@@ -3,11 +3,12 @@
 
 import React from 'react';
 import {
+  useAudioVideo,
+  UserActivityProvider,
   VideoTileGrid,
-  UserActivityProvider
 } from 'amazon-chime-sdk-component-library-react';
 
-import { StyledLayout, StyledContent } from './Styled';
+import { StyledContent, StyledLayout } from './Styled';
 import NavigationControl from '../../containers/Navigation/NavigationControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import MeetingDetails from '../../containers/MeetingDetails';
@@ -18,20 +19,41 @@ import MeetingMetrics from '../../containers/MeetingMetrics';
 const MeetingView = () => {
   useMeetingEndRedirect();
   const { showNavbar, showRoster } = useNavigation();
+  const audioVideo = useAudioVideo();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const broadcastOn = urlParams.get('broadcast') === '1';
+
+  React.useEffect(() => {
+    if (broadcastOn) {
+      audioVideo?.realtimeMuteLocalAudio();
+    }
+  }, [urlParams, audioVideo, broadcastOn]);
 
   return (
     <UserActivityProvider>
-      <StyledLayout showNav={showNavbar} showRoster={showRoster}>
-        <StyledContent>
-          <MeetingMetrics />
-          <VideoTileGrid
-            className="videos"
-            noRemoteVideoView={<MeetingDetails />}
-          />
-          <MeetingControls />
-        </StyledContent>
-        <NavigationControl />
-      </StyledLayout>
+      {broadcastOn ? (
+        <StyledLayout showNav={false} showRoster={false}>
+          <StyledContent>
+            <VideoTileGrid
+              className="videos"
+              noRemoteVideoView={<MeetingDetails />}
+            />
+          </StyledContent>
+        </StyledLayout>
+      ) : (
+        <StyledLayout showNav={showNavbar} showRoster={showRoster}>
+          <StyledContent>
+            <MeetingMetrics />
+            <VideoTileGrid
+              className="videos"
+              noRemoteVideoView={<MeetingDetails />}
+            />
+            <MeetingControls />
+          </StyledContent>
+          <NavigationControl />
+        </StyledLayout>
+      )}
     </UserActivityProvider>
   );
 };

@@ -95,3 +95,20 @@ export async function endMeeting(meetingId: string) {
     throw new Error('Server error ending meeting');
   }
 }
+
+export function startBroadcasting(meetingId: string, rtmp: string, streamKey: string) {
+  return fetch(
+    `${BASE_URL}broadcasting?` + new URLSearchParams({
+      meetingId,
+      rtmp,
+      streamKey
+    }),
+    {
+      method: 'POST',
+    }
+  );
+}
+
+export function stopBroadcasting() {
+  return fetch(`${BASE_URL}broadcasting?stop`, { method: 'POST' });
+}

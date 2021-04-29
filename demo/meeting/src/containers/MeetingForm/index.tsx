@@ -86,6 +86,36 @@ const MeetingForm: React.FC = () => {
     getMeetings();
   }, [getMeetings]);
 
+  useEffect(() => {
+    if (!meetings.length) return;
+
+    const start = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const meetingName = urlParams.get("meetingId");
+      if (urlParams.get('broadcast') === "1" && meetingName !== null) {
+        const meetingInfo = meetings.find(({name}) => name === meetingName);
+        if (!meetingInfo) return;
+        meetingManager.getAttendee = createGetAttendeeCallback(meetingName);
+
+        try {
+          const { JoinInfo } = await fetchMeeting(meetingName, 'broadcast', region);
+
+          await meetingManager.join({
+            meetingInfo: JoinInfo.Meeting,
+            attendeeInfo: JoinInfo.Attendee,
+          });
+          await meetingManager.start();
+          setAppMeetingInfo(meetingName, 'broadcast', region);
+          history.push(`${routes.MEETING}/${meetingName}?broadcast=1`);
+        } catch (error) {
+          updateErrorMessage(error.message);
+        }
+
+      }
+    }
+    start();
+  }, [meetings]);
+
   const copy = useCallback((text: string) => {
     navigator.clipboard.writeText(text).then(
       function() {

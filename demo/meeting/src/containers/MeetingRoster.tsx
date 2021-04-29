@@ -17,7 +17,7 @@ const MeetingRoster = () => {
   const [filter, setFilter] = useState('');
   const { closeRoster } = useNavigation();
 
-  let attendees = Object.values(roster);
+  let attendees = Object.values(roster).filter(({name}) => name !== 'broadcast');
 
   if (filter) {
     attendees = attendees.filter((attendee: any) =>
